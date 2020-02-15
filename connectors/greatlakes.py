@@ -69,7 +69,6 @@ class GreatLakes():
         :returns: decimal
 
         """
-        print(balance)
         balance = balance.replace('$', '')
         balance = balance.replace(',', '')
         balance = float(balance)
