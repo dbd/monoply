@@ -2,6 +2,7 @@ import os
 from connectors.discover import Discover
 from connectors.greatlakes import GreatLakes
 from connectors.heartland import Heartland
+from connectors.nelnet import Nelnet
 import settings
 import argparse
 
@@ -19,6 +20,16 @@ def parse_args():
                         help=('Password to use for heartland. '
                               'Default: env HEARTLAND_PASS'),
                         default=os.environ.get('HEARTLAND_PASS'))
+    # Nelnet
+    parser.add_argument('-n', '--nelnet', action='store_true',
+                        help='Get the nelnet loan balance')
+    parser.add_argument('--nelnet-user', action='store',
+                        dest='nelnet_user', help='User to use for nelnet')
+    parser.add_argument('--nelnet-pass', action='store',
+                        dest='nelnet_pass',
+                        help=('Password to use for nelnet. '
+                              'Default: env NELNET_PASS'),
+                        default=os.environ.get('NELNET_PASS'))
     # Discover
     parser.add_argument('-d', '--discover', action='store_true',
                         help='Get the discover loan balance')
@@ -78,6 +89,17 @@ def main():
             print('--heartland-user and '
                   '(--heartland-pass or HEARTLAND_PASS) '
                   'are required to get Heartland loan information')
+
+    if args.nelnet:
+        if args.nelnet_user and args.nelnet_pass:
+            nelnet = Nelnet(args.nelnet_user,
+                            args.nelnet_pass)
+            nelnet_balance = nelnet.getBalance()
+            print(f'Nelnet Balance: {nelnet_balance}')
+        else:
+            print('--nelnet-user and '
+                  '(--nelnet-pass or NELNET_PASS) '
+                  'are required to get Nelnet loan information')
 
 
 if __name__ == '__main__':
