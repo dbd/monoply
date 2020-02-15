@@ -5,10 +5,15 @@ from connectors.heartland import Heartland
 from connectors.nelnet import Nelnet
 import settings
 import argparse
+from datetime import date
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument('-s', '--save', action='store_true',
+                        help='Save the data to a spreadsheet')
     # Heartland
     parser.add_argument('--heartland-user', action='store',
                         dest='heartland_user',
@@ -90,6 +95,24 @@ def main():
         print('--nelnet-user and '
               '(--nelnet-pass or NELNET_PASS) '
               'are required to get Nelnet loan information')
+
+    if args.save:
+        scope = ['https://spreadsheets.google.com/feeds',
+                 'https://www.googleapis.com/auth/drive']
+        creds = ServiceAccountCredentials.from_json_keyfile_name(
+                    settings.JSON_KEY_FILE, scope)
+        client = gspread.authorize(creds)
+        sheet = client.open(settings.SPREADSHEET_NAME).worksheet(
+                    settings.WORKSHEET)
+        all_sheets = sheet.get_all_values()
+        next_row = len(all_sheets)+1
+        today = date.today().strftime("%m/%d/%Y")
+        row = [today,
+               discover_balance,
+               heartland_balance,
+               greatlakes_balance,
+               nelnet_balance]
+        sheet.insert_row(row, next_row)
 
 
 if __name__ == '__main__':
