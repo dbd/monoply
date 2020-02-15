@@ -1,11 +1,24 @@
 import os
 from connectors.discover import Discover
 from connectors.greatlakes import GreatLakes
+from connectors.heartland import Heartland
+import settings
 import argparse
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Process some integers.')
+    # Heartland
+    parser.add_argument('-e', '--heartland', action='store_true',
+                        help='Get the heartland loan balance')
+    parser.add_argument('--heartland-user', action='store',
+                        dest='heartland_user',
+                        help='User to use for heartland')
+    parser.add_argument('--heartland-pass', action='store',
+                        dest='heartland_pass',
+                        help=('Password to use for heartland. '
+                              'Default: env HEARTLAND_PASS'),
+                        default=os.environ.get('HEARTLAND_PASS'))
     # Discover
     parser.add_argument('-d', '--discover', action='store_true',
                         help='Get the discover loan balance')
@@ -38,7 +51,7 @@ def main():
         if args.discover_user and args.discover_pass:
             discover = Discover(args.discover_user, args.discover_pass)
             discover_balance = discover.getBalance()
-            print(discover_balance)
+            print(f'Discover Balance: {discover_balance}')
         else:
             print('--discover_pass and (--discover-pass or DISCOVER_PASS) '
                   'are required to get Discover loan information')
@@ -48,11 +61,23 @@ def main():
                                     args.greatlakes_pass,
                                     args.greatlakes_pin)
             greatlakes_balance = greatlakes.getBalance()
-            print(greatlakes_balance)
+            print(f'Great Lakes Balance: {greatlakes_balance}')
         else:
             print('--greatlakes-user and '
                   '(--greatlakes-pass or GREATLAKES_PASS) '
                   'are required to get GreatLakes loan information')
+
+    if args.heartland:
+        if args.heartland_user and args.heartland_pass:
+            heartland = Heartland(args.heartland_user,
+                                  args.heartland_pass,
+                                  security_questions=settings.SECURITY_QUESTIONS)
+            heartland_balance = heartland.getBalance()
+            print(f'Heartland Balance: {heartland_balance}')
+        else:
+            print('--heartland-user and '
+                  '(--heartland-pass or HEARTLAND_PASS) '
+                  'are required to get Heartland loan information')
 
 
 if __name__ == '__main__':
